@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>这是A网页</title>
+</head>
+
+<body>
+
+    <script>
+        // 定义代理函数，这个函数接收两个参数，一个是要跨域的目标URL，另一个是callback
+        const proxy = function(url,callback) {
+            // 定义一个状态
+            let state = 0;
+            // 创建iframe标签
+            const iframe = document.createElement("iframe");
+            // 指定iframe对应的URL
+            iframe.src = url;
+
+            // 下面是iframe的加载事件，iframe加载完成之后进行触发
+            iframe.onload = function() {
+                if (state === 1) {
+                    // 函数走到这里，说明这是第二次触发onload，执行回调函数，读取iframe中的数据
+                    callback(iframe.contentWindow.name);
+                    destoryFrame();
+                } else if (state === 0) {
+                    // 走到这里说明，这是第一次onload，切换到代理页面
+                    iframe.contentWindow.location = "http://localhost:8080/proxy";
+                    state = 1;
+                }
+            }
+            // 将iframe加载到DOM中
+            document.body.appendChild(iframe);
+
+            // 销毁iframe的函数，这是为了保证安全
+            function destoryFrame() {
+                iframe.contentWindow.document.write("");
+                iframe.contentWindow.close();
+                document.body.removeChild(iframe);
+            }
+        };
+        // 请求跨域b页面中的数据
+        proxy("http://localhost:5200",function(data) {
+            alert(data);
+        });
+    </script>
+</body>
+
+</html>
